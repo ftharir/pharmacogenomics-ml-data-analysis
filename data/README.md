@@ -5,7 +5,7 @@
 | Column | Type | Example | Meaning |
 |---|---|---|---|
 | `Unnamed: 0` | int | 0 | Leftover row index from a previous export (not a feature). |
-| `VariantID` | str | `1_97915614_C_T` | `chromosome_position_reference-allele_alternate-allele`. The notebook splits it into the two alleles. |
+| `VariantID` | str | `1_97450058_A_C` | `chromosome_position_reference-allele_alternate-allele`. The notebook splits it into the two alleles. |
 | `Conequence` | str | `missense_variant` | Molecular consequence of the variant (the header is misspelled in the source file and kept as is). 21 distinct values. |
 | `Gene` | str | `DPYD` | Affected gene. 605 distinct values. |
 | `Drug` | str | `fluorouracil` | Medication. 406 distinct values. |

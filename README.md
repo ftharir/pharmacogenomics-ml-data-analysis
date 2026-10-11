@@ -12,6 +12,8 @@ Data analysis and machine-learning classification of <b>drug effects from geneti
   <img alt="Topic" src="https://img.shields.io/badge/topic-pharmacogenomics-8a2be2">
 </p>
 
+People respond differently to the same drug, and part of that difference is written in their genes. This project analyses a table of 4,698 reported links between genetic variants and drugs, each labelled with the effect found (for example *increased efficacy* or *decreased dosage*). It first explores the data (class imbalance, duplicates, conflicting reports, which genes and drugs matter) and then trains an SVM to predict the effect from the variant, gene, drug and consequence. Along the way a data-leakage problem was found and fixed, so the reported score is an honest one.
+
 > This project was done in **April–May 2025** in one of the research labs at Sharif University of Technology.
 
 ---
@@ -25,6 +27,32 @@ Data analysis and machine-learning classification of <b>drug effects from geneti
 | **Model** | SVM (linear, then tuned RBF with `GridSearchCV`) compared with a most-frequent-class baseline |
 | **Result** | **42.2 % accuracy** vs 34.5 % baseline (weighted F1 0.42, macro F1 0.29) |
 | **Key lesson** | The first run reported **59.3 %**; after removing data leakage and duplicate rows the honest figure is **42 %** |
+
+## Workflow
+
+```mermaid
+flowchart LR
+    A[VarDrug.csv<br>4,698 rows] --> B[Exploration<br>classes, duplicates, ambiguity]
+    B --> C[Remove exact<br>duplicates -> 3,295 rows]
+    C --> D[Parse alleles,<br>encode drug / gene / consequence]
+    D --> E[70/30 split<br>encodings from train only]
+    E --> F[Scaling + SVM<br>linear, then GridSearchCV]
+    F --> G[Evaluation vs<br>baseline, per-class report]
+```
+
+## Dataset
+
+Each row is one reported effect of a genetic variant on a drug:
+
+| Column | Example | Meaning |
+|---|---|---|
+| `VariantID` | `1_97450058_A_C` | chromosome, position, reference allele, alternate allele |
+| `Conequence` | `splice_donor_variant` | what the variant does to the gene (spelling as in the source file) |
+| `Gene` | `DPYD` | affected gene |
+| `Drug` | `fluorouracil` | medication |
+| `SideEffect` | `increased-Efficacy` | **target:** direction (increased / decreased) + kind (Efficacy, PK, Dosage, Toxicity, PD, Other) |
+
+Full data dictionary: [`data/README.md`](data/README.md).
 
 ## Results
 
@@ -55,7 +83,11 @@ More in [`docs/findings.md`](docs/findings.md); per-class numbers are in [`repor
 
 ## Key insights
 
-Drug and gene carry almost all the signal (Cramér's V with the kind of effect: drug 0.51, gene 0.42, consequence 0.08); warfarin and VKORC1 are about dosage in ~85-90 % of records; toxicity is rare and concentrated in a few drugs (e.g. nevirapine); 12.5 % of variant-drug pairs have conflicting reports.
+* **Drug and gene carry almost all the signal.** Cramér's V with the kind of effect: drug 0.51, gene 0.42, variant consequence only 0.08.
+* **Some drugs are almost one-topic:** warfarin and VKORC1 are about dosage in 85-90 % of records, duloxetine is 100 % efficacy.
+* **Toxicity is rare** (2 % of rows) and concentrated in a few drugs and genes (e.g. nevirapine, DPYD, TYMS).
+* **Conflicting reports:** 12.5 % of variant-drug pairs carry more than one effect, often the same effect in opposite directions.
+* **Consequence for the model:** the *kind* of effect can be learned from drug and gene, the *direction* much less.
 
 <p align="center"><img src="reports/figures/08_effect_kind_by_gene_and_drug.png" width="80%"></p>
 
@@ -65,6 +97,23 @@ Full list: [`docs/key_insights.md`](docs/key_insights.md).
 
 My first run scored 59 %; that number was inflated by data leakage (a label-derived feature, statistics computed before the split, a scaler fitted on the test set, duplicate rows).
 Fixing it with a few small edits gave the honest score of 42 %. Details: [`docs/data_leakage_audit.md`](docs/data_leakage_audit.md).
+
+## What this project demonstrates
+
+* Exploratory data analysis and data-quality checks (imbalance, duplicates, ambiguous labels)
+* Feature encoding for high-cardinality categories (frequency and target statistics)
+* SVM classification with hyper-parameter search and a baseline comparison
+* Spotting and removing data leakage, and reporting the honest score
+* Association analysis (Cramér's V) and clear, documented reporting (figures, tables, model card)
+
+## Where to start
+
+| If you want to... | Open |
+|---|---|
+| see the analysis code | [`notebooks/01_side_effect_classification_svm.ipynb`](notebooks/01_side_effect_classification_svm.ipynb) |
+| read the main findings | [`docs/key_insights.md`](docs/key_insights.md) and [`docs/findings.md`](docs/findings.md) |
+| see all plots | [`reports/figures`](reports/figures) |
+| understand the method | [`docs/methodology.md`](docs/methodology.md) |
 
 ## Repository structure
 
