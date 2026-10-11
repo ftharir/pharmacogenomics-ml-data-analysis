@@ -2,7 +2,7 @@
 
 Data leakage means the model sees, during training or evaluation, information it would not have for a genuinely new example. The test score then looks better than the real performance.
 
-## Problems found in the first version of `task.ipynb`
+## Problems found in the first version of the main notebook
 
 | # | Problem | Why it leaks |
 |---|---|---|
@@ -15,7 +15,7 @@ Data leakage means the model sees, during training or evaluation, information it
 1. `X = data.drop(columns=['SideEffect', 'SideEffect_encoded'])` - the label-derived column is no longer a feature.
 2. One new code cell right after `train_test_split` recomputes the three `*_encoded` columns **from the training rows only** and maps them onto the test rows (unseen categories get the training mean).
 3. `scaler.transform(X_test_numeric)` instead of `fit_transform`.
-4. The data path was changed from an absolute local path to `VarDrug.csv`, and the notebook was re-run so that the printed outputs belong to the corrected code. (One early cell, `data.apply(pd.Series.value_counts)`, fails on current pandas versions, so its original output was kept.)
+4. The data path was changed from an absolute local path to `../data/raw/VarDrug.csv`, and the notebook was re-run so that the printed outputs belong to the corrected code. (One early cell, `data.apply(pd.Series.value_counts)`, fails on current pandas versions, so its original output was kept.)
 
 ## Effect
 

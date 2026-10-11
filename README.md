@@ -8,16 +8,25 @@ Given a variant, its gene, the drug and the variant's molecular consequence, an 
 > In **October 2026** I reviewed it, found a data-leakage problem in my own pipeline, fixed it with
 > a few small edits and added the figures and notes in this repository. The notebook itself is my original work.
 
-## Contents
+## Repository structure
 
-| File / folder | What it is |
-|---|---|
-| [`task.ipynb`](task.ipynb) | **Main notebook (my own code):** EDA, feature encoding, SVM (linear), GridSearchCV, evaluation, baseline comparison. Comments and text are partly in Persian. |
-| [`practice.ipynb`](practice.ipynb) | Warm-up notebook: SVM on the iris dataset. |
-| [`genetest.ipynb`](genetest.ipynb) | Empty scratch notebook, kept as it was. |
-| [`VarDrug.csv`](VarDrug.csv) | The data set: 4,698 variant-drug records (columns `VariantID`, `Conequence` [sic], `Gene`, `Drug`, `SideEffect`). |
-| [`figures/`](figures) | Plots made from the data and from the results (below). |
-| [`docs/data_leakage.md`](docs/data_leakage.md) | What was wrong in the first version and exactly what changed. |
+```
+.
+├── data/
+│   ├── raw/VarDrug.csv                  # the data set, unchanged
+│   └── README.md                        # data dictionary and quality notes
+├── notebooks/
+│   ├── 00_svm_warmup_iris.ipynb         # warm-up: SVM on the iris data set
+│   └── 01_side_effect_classification_svm.ipynb   # main analysis (my code)
+├── reports/
+│   └── figures/                         # 7 plots: data analysis and results
+└── docs/
+    ├── findings.md                      # results table and conclusions
+    ├── data_leakage_audit.md            # what was wrong and what changed
+    └── glossary.md                      # pharmacogenomics / ML terms
+```
+
+The main notebook (Persian comments and text) covers EDA, feature encoding, SVM, GridSearchCV, evaluation and the baseline comparison.
 
 ## The data
 
@@ -25,11 +34,11 @@ Given a variant, its gene, the drug and the variant's molecular consequence, an 
 * **Strong class imbalance:** the biggest class (`increased-Efficacy`) holds about 32 % of the rows, the smallest ones only a handful.
 * **1,403 rows (30 %) are exact duplicates**, and 12.5 % of the variant-drug pairs appear with more than one effect.
 
-![classes](figures/01_class_distribution.png)
-![drugs and genes](figures/02_top_drugs_and_genes.png)
-![duplicates](figures/04_duplicates_and_ambiguity.png)
+![classes](reports/figures/01_class_distribution.png)
+![drugs and genes](reports/figures/02_top_drugs_and_genes.png)
+![duplicates](reports/figures/04_duplicates_and_ambiguity.png)
 
-## Method (as in `task.ipynb`)
+## Method (as in the main notebook)
 
 1. Exploration: types, value counts, missing values, distributions.
 2. Features: frequency encoding of the target, per-category target statistics for `Drug`, `Gene` and `Conequence`, label encoding of the alleles parsed from `VariantID`.
@@ -47,10 +56,12 @@ had reached the features. After the fix the same pipeline gives:
 | SVM, first version (with leakage) | 0.593 | 0.503 |
 | **SVM, after the fix (best of the grid: RBF, C=100)** | **0.512** | **0.504** |
 
-![before and after](figures/05_before_after_leakage_fix.png)
+![before and after](reports/figures/05_before_after_leakage_fix.png)
+
+![confusion matrix](reports/figures/06_confusion_matrix_after_fix.png)
 
 The model still clearly beats the baseline, but the honest figure is about **51 %**, not 59 %. Details and the three
-one-line changes are in [`docs/data_leakage.md`](docs/data_leakage.md).
+one-line changes are in [`docs/data_leakage_audit.md`](docs/data_leakage_audit.md); the full results discussion is in [`docs/findings.md`](docs/findings.md).
 
 ### Known limitations
 
@@ -62,10 +73,10 @@ one-line changes are in [`docs/data_leakage.md`](docs/data_leakage.md).
 
 ```bash
 pip install pandas numpy scikit-learn matplotlib seaborn jupyter
-jupyter notebook task.ipynb
+jupyter notebook notebooks/01_side_effect_classification_svm.ipynb
 ```
 
-The notebook reads `VarDrug.csv` from the same folder.
+The notebook reads `../data/raw/VarDrug.csv`, i.e. relative to the `notebooks/` folder.
 
 ## Data and licence
 
