@@ -1,0 +1,10 @@
+feature,target,cramers_v
+Drug,SideEffect,0.423
+Drug,kind,0.511
+Drug,direction,0.284
+Gene,SideEffect,0.352
+Gene,kind,0.415
+Gene,direction,0.366
+Conequence,SideEffect,0.068
+Conequence,kind,0.082
+Conequence,direction,0.097

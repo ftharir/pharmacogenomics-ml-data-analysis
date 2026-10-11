@@ -1,0 +1,16 @@
+pair,variant_drug_pairs
+decreased-Efficacy <-> increased-Efficacy,104
+decreased-PK <-> increased-PK,73
+decreased-Dosage <-> increased-Dosage,60
+increased-Efficacy <-> increased-PK,53
+decreased-Efficacy <-> increased-PK,47
+increased-Dosage <-> increased-PK,35
+decreased-PK <-> increased-Efficacy,33
+decreased-PK <-> increased-Dosage,31
+decreased-Dosage <-> decreased-PK,30
+increased-Dosage <-> increased-Efficacy,30
+decreased-Dosage <-> increased-PK,26
+decreased-Efficacy <-> decreased-PK,26
+decreased-Efficacy <-> increased-Dosage,25
+decreased-Dosage <-> increased-Efficacy,20
+decreased-Dosage <-> decreased-Efficacy,14

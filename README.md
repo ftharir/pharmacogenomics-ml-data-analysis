@@ -53,6 +53,14 @@ More in [`docs/findings.md`](docs/findings.md); per-class numbers are in [`repor
   <img src="reports/figures/04_duplicates_and_ambiguity.png" width="48%">
 </p>
 
+## Key insights
+
+Drug and gene carry almost all the signal (Cramér's V with the kind of effect: drug 0.51, gene 0.42, consequence 0.08); warfarin and VKORC1 are about dosage in ~85-90 % of records; toxicity is rare and concentrated in a few drugs (e.g. nevirapine); 12.5 % of variant-drug pairs have conflicting reports.
+
+<p align="center"><img src="reports/figures/08_effect_kind_by_gene_and_drug.png" width="80%"></p>
+
+Full list: [`docs/key_insights.md`](docs/key_insights.md).
+
 ## Data leakage
 
 My first run scored 59 %; that number was inflated by data leakage (a label-derived feature, statistics computed before the split, a scaler fitted on the test set, duplicate rows).
@@ -69,10 +77,11 @@ Fixing it with a few small edits gave the honest score of 42 %. Details: [`docs/
 │   ├── 00_svm_warmup_iris.ipynb         # warm-up: SVM on the iris data set
 │   └── 01_side_effect_classification_svm.ipynb   # main analysis
 ├── reports/                             # + README
-│   ├── figures/                         # 7 plots
+│   ├── figures/                         # 11 plots
 │   └── tables/                          # per-class report, class counts, top drugs / genes / consequences
 ├── docs/                                # + README
 │   ├── methodology.md                   # pipeline, metrics, threats to validity
+│   ├── key_insights.md                  # what the analysis shows
 │   ├── findings.md                      # results and conclusions
 │   ├── data_leakage_audit.md            # what was wrong and what changed
 │   ├── model_card.md                    # intended use and limits of the model
