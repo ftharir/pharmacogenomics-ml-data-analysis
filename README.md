@@ -44,32 +44,19 @@ Rare classes (`PD`, `Other`, `Toxicity`) are almost never predicted. The commone
 
 More in [`docs/findings.md`](docs/findings.md); per-class numbers are in [`reports/tables`](reports/tables).
 
-## What I found in the data
+## About the data
 
-* **Imbalance:** the largest class holds 32 % of the rows, the smallest two only 5 and 7 rows.
-* **30 % duplicates:** 1,403 rows are exact copies of other rows (removed before modelling).
-* **Ambiguity:** 12.5 % of variant-drug pairs appear with more than one effect.
-* **Concentration:** a few drugs and genes dominate (e.g. warfarin 442 rows, ABCB1 352 rows).
+4,698 records, 12 imbalanced classes (the largest holds 32 %) and about 30 % exact duplicates, which are removed before modelling.
 
 <p align="center">
   <img src="reports/figures/01_class_distribution.png" width="48%">
   <img src="reports/figures/04_duplicates_and_ambiguity.png" width="48%">
 </p>
-<p align="center"><img src="reports/figures/02_top_drugs_and_genes.png" width="80%"></p>
 
-## The data-leakage story
+## Data leakage
 
-Data leakage means information the model could not have at prediction time reaches the features, so the test score is too good.
-Four problems were in the first version of the notebook:
-
-1. a numeric encoding of the **label itself** stayed among the features;
-2. the drug/gene/consequence statistics were computed on the **whole table before the split**;
-3. the scaler was **re-fitted on the test set**;
-4. **30 % of the rows are exact duplicates**, so copies sat in both train and test.
-
-Fix: drop the label-derived column, recompute the statistics from training rows only (one new cell after the split) and use `transform` on the test set and remove the duplicate rows before the split.
-Everything else in the notebook is unchanged. Full explanation: [`docs/data_leakage_audit.md`](docs/data_leakage_audit.md).
-The git history shows the original notebook in the first commit and the fixes in the following ones.
+My first run scored 59 %; that number was inflated by data leakage (a label-derived feature, statistics computed before the split, a scaler fitted on the test set, duplicate rows).
+Fixing it with a few small edits gave the honest score of 42 %. Details: [`docs/data_leakage_audit.md`](docs/data_leakage_audit.md).
 
 ## Repository structure
 
@@ -78,13 +65,13 @@ The git history shows the original notebook in the first commit and the fixes in
 ├── data/
 │   ├── raw/VarDrug.csv                  # the data set, unchanged
 │   └── README.md                        # data dictionary and quality notes
-├── notebooks/
+├── notebooks/                           # + README
 │   ├── 00_svm_warmup_iris.ipynb         # warm-up: SVM on the iris data set
 │   └── 01_side_effect_classification_svm.ipynb   # main analysis
-├── reports/
+├── reports/                             # + README
 │   ├── figures/                         # 7 plots
 │   └── tables/                          # per-class report, class counts, top drugs / genes / consequences
-├── docs/
+├── docs/                                # + README
 │   ├── methodology.md                   # pipeline, metrics, threats to validity
 │   ├── findings.md                      # results and conclusions
 │   ├── data_leakage_audit.md            # what was wrong and what changed
@@ -107,20 +94,10 @@ jupyter notebook notebooks/01_side_effect_classification_svm.ipynb
 The notebook reads `../data/raw/VarDrug.csv`, i.e. relative to the `notebooks/` folder. The grid search takes a few minutes.
 Comments and text in the notebook are partly in Persian.
 
-## Limitations
+## Limitations and next steps
 
-* The category statistics inside the training set are computed on the same rows the model trains on (mild over-fitting; the test set is not affected).
-* One random split only; no repeated or grouped cross-validation.
-* Rare classes have too few examples for a reliable estimate.
-* The model is a learning exercise and **must not be used for clinical decisions** (see the [model card](docs/model_card.md)).
-
-## Ideas for the next version
-
-- [ ] report macro-F1 as the main metric
-- [ ] split grouped by drug to test generalisation to unseen drugs
-- [ ] stratified repeated cross-validation
-- [ ] merge the very rare classes
-- [ ] compare with gradient boosting and richer gene/drug descriptors
+Single random split, rare classes with very few examples, and no clinical validity (see the [model card](docs/model_card.md)).
+Next: group the split by drug, repeated cross-validation, gradient boosting and richer gene/drug features.
 
 ## Data and licence
 
