@@ -13,9 +13,7 @@ including an audit and fix of a data-leakage problem in my own first version.
   <img alt="Topic" src="https://img.shields.io/badge/topic-pharmacogenomics-8a2be2">
 </p>
 
-> **Timeline.** First worked on between **26 April and 11 May 2025** (dates of the original files) as a research-style task.
-> In **October 2026** I reviewed it, found a data-leakage problem, fixed it with a few small edits to my notebook and added the
-> figures, tables and documentation in this repository. The analysis code is my own original notebook.
+> This project was done in **April–May 2025** in one of the research labs at Sharif University of Technology.
 
 ---
 
