@@ -1,12 +1,76 @@
-# Pharmacogenomics ML Data Analysis
+<h1 align="center">Pharmacogenomics ML Data Analysis</h1>
 
-Data analysis and machine-learning classification of **drug side effects / response from genetic variants**.
-Given a variant, its gene, the drug and the variant's molecular consequence, an SVM predicts one of 12 effect classes
-(for example `increased-Efficacy`, `decreased-Dosage`, `increased-PK`).
+<p align="center">
+Data analysis and machine-learning classification of <b>drug effects from genetic variants</b>,<br>
+including an audit and fix of a data-leakage problem in my own first version.
+</p>
 
-> **Timeline.** Worked on between **26 April and 11 May 2025** (dates of the original files), as a research-style task.
-> In **October 2026** I reviewed it, found a data-leakage problem in my own pipeline, fixed it with
-> a few small edits and added the figures and notes in this repository. The notebook itself is my original work.
+<p align="center">
+  <img alt="Python" src="https://img.shields.io/badge/python-3.12-blue">
+  <img alt="scikit-learn" src="https://img.shields.io/badge/scikit--learn-SVM-orange">
+  <img alt="Jupyter" src="https://img.shields.io/badge/notebooks-Jupyter-F37626">
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-green">
+  <img alt="Topic" src="https://img.shields.io/badge/topic-pharmacogenomics-8a2be2">
+</p>
+
+> **Timeline.** First worked on between **26 April and 11 May 2025** (dates of the original files) as a research-style task.
+> In **October 2026** I reviewed it, found a data-leakage problem, fixed it with a few small edits to my notebook and added the
+> figures, tables and documentation in this repository. The analysis code is my own original notebook.
+
+---
+
+## At a glance
+
+| | |
+|---|---|
+| **Question** | Can the effect a genetic variant has on a drug (e.g. `increased-Efficacy`, `decreased-Dosage`) be predicted from the variant, gene, drug and consequence? |
+| **Data** | 4,698 variant-drug records, 406 drugs, 605 genes, 21 consequence types, **12 imbalanced classes** |
+| **Model** | SVM (linear, then tuned RBF with `GridSearchCV`) compared with a most-frequent-class baseline |
+| **Result** | **51.2 % accuracy** vs 32.3 % baseline (weighted F1 0.50, macro F1 0.32) |
+| **Key lesson** | My first run reported **59.3 %**; a leakage audit showed the honest figure is about **51 %** |
+
+## Results
+
+| Model | Test accuracy | Weighted F1 |
+|---|---|---|
+| Baseline - always the most frequent class | 0.323 | 0.158 |
+| SVM in the first version (**with leakage**) | 0.593 | 0.503 |
+| **Tuned SVM after the fix (RBF, C=100)** | **0.512** | **0.504** |
+
+<p align="center"><img src="reports/figures/05_before_after_leakage_fix.png" width="55%"></p>
+
+The model beats the baseline by about 19 points, mostly on the large classes (`increased-Efficacy` F1 0.69, `decreased-Dosage` 0.62).
+Rare classes (`PD`, `Other`, `Toxicity`) are almost never predicted. The commonest mistake is the *direction* of an efficacy effect:
+
+<p align="center"><img src="reports/figures/06_confusion_matrix_after_fix.png" width="62%"></p>
+
+More in [`docs/findings.md`](docs/findings.md); per-class numbers are in [`reports/tables`](reports/tables).
+
+## What I found in the data
+
+* **Imbalance:** the largest class holds 32 % of the rows, the smallest two only 5 and 7 rows.
+* **30 % duplicates:** 1,403 rows are exact copies of other rows.
+* **Ambiguity:** 12.5 % of variant-drug pairs appear with more than one effect.
+* **Concentration:** a few drugs and genes dominate (e.g. warfarin 442 rows, ABCB1 352 rows).
+
+<p align="center">
+  <img src="reports/figures/01_class_distribution.png" width="48%">
+  <img src="reports/figures/04_duplicates_and_ambiguity.png" width="48%">
+</p>
+<p align="center"><img src="reports/figures/02_top_drugs_and_genes.png" width="80%"></p>
+
+## The data-leakage story
+
+Data leakage means information the model could not have at prediction time reaches the features, so the test score is too good.
+Three problems were in the first version of the notebook:
+
+1. a numeric encoding of the **label itself** stayed among the features;
+2. the drug/gene/consequence statistics were computed on the **whole table before the split**;
+3. the scaler was **re-fitted on the test set**.
+
+Fix: drop the label-derived column, recompute the statistics from training rows only (one new cell after the split) and use `transform` on the test set.
+Everything else in the notebook is unchanged. Full explanation: [`docs/data_leakage_audit.md`](docs/data_leakage_audit.md).
+The git history shows my original notebook in the first commit and the fix in the second.
 
 ## Repository structure
 
@@ -17,68 +81,51 @@ Given a variant, its gene, the drug and the variant's molecular consequence, an 
 │   └── README.md                        # data dictionary and quality notes
 ├── notebooks/
 │   ├── 00_svm_warmup_iris.ipynb         # warm-up: SVM on the iris data set
-│   └── 01_side_effect_classification_svm.ipynb   # main analysis (my code)
+│   └── 01_side_effect_classification_svm.ipynb   # main analysis
 ├── reports/
-│   └── figures/                         # 7 plots: data analysis and results
-└── docs/
-    ├── findings.md                      # results table and conclusions
-    ├── data_leakage_audit.md            # what was wrong and what changed
-    └── glossary.md                      # pharmacogenomics / ML terms
+│   ├── figures/                         # 7 plots
+│   └── tables/                          # per-class report, class counts, top drugs / genes / consequences
+├── docs/
+│   ├── methodology.md                   # pipeline, metrics, threats to validity
+│   ├── findings.md                      # results and conclusions
+│   ├── data_leakage_audit.md            # what was wrong and what changed
+│   ├── model_card.md                    # intended use and limits of the model
+│   └── glossary.md                      # pharmacogenomics and ML terms
+├── CITATION.cff
+├── LICENSE
+└── requirements.txt
 ```
-
-The main notebook (Persian comments and text) covers EDA, feature encoding, SVM, GridSearchCV, evaluation and the baseline comparison.
-
-## The data
-
-* 4,698 rows, no missing values, **12 classes**, 406 drugs, 605 genes, 21 consequence types.
-* **Strong class imbalance:** the biggest class (`increased-Efficacy`) holds about 32 % of the rows, the smallest ones only a handful.
-* **1,403 rows (30 %) are exact duplicates**, and 12.5 % of the variant-drug pairs appear with more than one effect.
-
-![classes](reports/figures/01_class_distribution.png)
-![drugs and genes](reports/figures/02_top_drugs_and_genes.png)
-![duplicates](reports/figures/04_duplicates_and_ambiguity.png)
-
-## Method (as in the main notebook)
-
-1. Exploration: types, value counts, missing values, distributions.
-2. Features: frequency encoding of the target, per-category target statistics for `Drug`, `Gene` and `Conequence`, label encoding of the alleles parsed from `VariantID`.
-3. 70/30 train/test split (`random_state=42`), standardisation, linear SVM, then GridSearchCV over `C`, `kernel` and `gamma` (5-fold).
-4. Evaluation: accuracy / weighted precision / recall / F1, confusion matrix, comparison with a most-frequent-class baseline.
-
-## Results and the data-leakage fix
-
-My first version reported **59.3 % accuracy**. That number was too optimistic: part of the information about the test labels
-had reached the features. After the fix the same pipeline gives:
-
-| Model | Test accuracy | Weighted F1 |
-|---|---|---|
-| Baseline (always the most frequent class) | 0.323 | 0.158 |
-| SVM, first version (with leakage) | 0.593 | 0.503 |
-| **SVM, after the fix (best of the grid: RBF, C=100)** | **0.512** | **0.504** |
-
-![before and after](reports/figures/05_before_after_leakage_fix.png)
-
-![confusion matrix](reports/figures/06_confusion_matrix_after_fix.png)
-
-The model still clearly beats the baseline, but the honest figure is about **51 %**, not 59 %. Details and the three
-one-line changes are in [`docs/data_leakage_audit.md`](docs/data_leakage_audit.md); the full results discussion is in [`docs/findings.md`](docs/findings.md).
-
-### Known limitations
-
-* The 30 % duplicate rows are still in the data, so identical rows can fall into both train and test; scores remain somewhat optimistic.
-* Rare classes (fewer than 15 test rows) are almost never predicted correctly; macro-averaged scores would be much lower than the weighted ones above.
-* Only variant-level categorical information is used, so the model learns mostly drug/gene statistics, not biology.
 
 ## Run it
 
 ```bash
-pip install pandas numpy scikit-learn matplotlib seaborn jupyter
+git clone https://github.com/ftharir/pharmacogenomics-ml-data-analysis.git
+cd pharmacogenomics-ml-data-analysis
+pip install -r requirements.txt
 jupyter notebook notebooks/01_side_effect_classification_svm.ipynb
 ```
 
-The notebook reads `../data/raw/VarDrug.csv`, i.e. relative to the `notebooks/` folder.
+The notebook reads `../data/raw/VarDrug.csv`, i.e. relative to the `notebooks/` folder. The grid search takes a few minutes.
+Comments and text in the notebook are partly in Persian.
+
+## Limitations
+
+* The duplicate rows are kept, so identical rows can land in both train and test; scores are probably still a bit optimistic.
+* One random split only; no repeated or grouped cross-validation.
+* Rare classes have too few examples for a reliable estimate.
+* The model is a learning exercise and **must not be used for clinical decisions** (see the [model card](docs/model_card.md)).
+
+## Ideas for the next version
+
+- [ ] deduplicate before splitting and report macro-F1 as the main metric
+- [ ] split grouped by drug to test generalisation to unseen drugs
+- [ ] stratified repeated cross-validation
+- [ ] merge the very rare classes
+- [ ] compare with gradient boosting and richer gene/drug descriptors
 
 ## Data and licence
 
-`VarDrug.csv` was provided to me for a research task; its original source is not documented. It is included only so the analysis can be reproduced.
-If you know the source or hold rights to it and want it credited or removed, please open an issue.
+The notebooks, documents and figures are released under the [MIT licence](LICENSE).
+`data/raw/VarDrug.csv` was provided to me for a research task and its original source is not documented; **it is not covered by the MIT licence**
+and is included only so the analysis can be reproduced. If you know the source or hold rights to it and want it credited or removed, please open an issue.
+To cite this work, see [`CITATION.cff`](CITATION.cff).

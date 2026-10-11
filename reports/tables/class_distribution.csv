@@ -1,0 +1,13 @@
+SideEffect,records,share
+increased-Efficacy,1503,0.3199
+increased-PK,783,0.1667
+decreased-Efficacy,763,0.1624
+decreased-Dosage,520,0.1107
+decreased-PK,494,0.1052
+increased-Dosage,471,0.1003
+decreased-Toxicity,41,0.0087
+increased-Toxicity,38,0.0081
+decreased-Other,37,0.0079
+increased-Other,36,0.0077
+decreased-PD,7,0.0015
+increased-PD,5,0.0011

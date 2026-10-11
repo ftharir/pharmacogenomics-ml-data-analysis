@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this analysis, please cite it as below."
+title: "Pharmacogenomics ML Data Analysis"
+type: software
+authors:
+  - alias: "harir"
+repository-code: "https://github.com/ftharir/pharmacogenomics-ml-data-analysis"
+license: MIT
+date-released: 2026-10-11
+abstract: "Data analysis and SVM classification of drug effects from genetic variants, including an audit and fix of a data-leakage problem."
